@@ -14,6 +14,7 @@ using Accord.Imaging.Filters;
 using System.Drawing.Drawing2D;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using System.IO;
 
 namespace CarolsAutoSubTitleMaker
 {
@@ -64,10 +65,6 @@ namespace CarolsAutoSubTitleMaker
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            vfr.Open("E:\\OTONA\\m35-1-cfr.mp4");
-            Console.WriteLine(vfr.FrameRate.ToDouble());
-            Console.WriteLine(vfr.FrameCount);
-            Console.WriteLine(vfr.CodecName);
             tm.Interval = 50;
             tm.Tick += myTick;
             parse = 1;
@@ -81,6 +78,7 @@ namespace CarolsAutoSubTitleMaker
         private void nextFrame()
         {
             bm = vfr.ReadVideoFrame();
+            pictureBox1.Image = bm;
             Bitmap msgObserved = new Bitmap(83, 70);
             Graphics graphic = Graphics.FromImage(msgObserved);
             graphic.DrawImage(bm, 0, 0, new Rectangle(1809, 785, 83, 70), GraphicsUnit.Pixel);
@@ -124,7 +122,7 @@ namespace CarolsAutoSubTitleMaker
                     {
                         nowSubTitle.EndFrame = count;
                         subTitleList.addSubTitle(nowSubTitle);
-                        Console.WriteLine(nowSubTitle.ToString());
+                        //Console.WriteLine(nowSubTitle.ToString());
                         nowSubTitle = new SubTitle();
                         Parse = 1;
                     }
@@ -139,16 +137,54 @@ namespace CarolsAutoSubTitleMaker
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (!vfr.IsOpen) return;
             for(int i = 0; i < vfr.FrameCount; i++)
             {
                 nextFrame();
             }
-            //Console.WriteLine(subTitleList.ToString());
+            //Console.Write(subTitleList.ToString());
+            StreamWriter sw = new StreamWriter("./subTitle.ass");
+            sw.Write(subTitleList.ToString());
+            sw.Close();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             nextFrame();
+        }
+
+        private void Form1_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] s = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            string filename = s[0];
+            vfr.Open(filename);
+            Console.WriteLine(vfr.FrameRate.ToDouble());
+            Console.WriteLine(vfr.FrameCount);
+            Console.WriteLine(vfr.CodecName);
+            Count = 0;
+            Parse = 1;
+        }
+
+        private void pictureBox1_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] s = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            string filename = s[0];
+            vfr.Open(filename);
+            Console.WriteLine(vfr.FrameRate.ToDouble());
+            Console.WriteLine(vfr.FrameCount);
+            Console.WriteLine(vfr.CodecName);
+        }
+
+        private void Form1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.All;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
         }
     }
 }
