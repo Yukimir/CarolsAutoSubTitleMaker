@@ -25,6 +25,7 @@ namespace CarolsAutoSubTitleMaker
         Bitmap bm;
         string MSGsampleHash = "";
         string ARROWsampleHash = "";
+        string filePath = "";
         int count = 0;
         public int Count
         {
@@ -78,7 +79,7 @@ namespace CarolsAutoSubTitleMaker
         private void nextFrame()
         {
             bm = vfr.ReadVideoFrame();
-            pictureBox1.Image = bm;
+            //pictureBox1.Image = bm;
             Bitmap msgObserved = new Bitmap(83, 70);
             Graphics graphic = Graphics.FromImage(msgObserved);
             graphic.DrawImage(bm, 0, 0, new Rectangle(1809, 785, 83, 70), GraphicsUnit.Pixel);
@@ -142,8 +143,8 @@ namespace CarolsAutoSubTitleMaker
             {
                 nextFrame();
             }
-            //Console.Write(subTitleList.ToString());
-            StreamWriter sw = new StreamWriter("./subTitle.ass");
+            Console.Write(subTitleList.ToString());
+            StreamWriter sw = new StreamWriter(Path.ChangeExtension(filePath,"ass"));
             sw.Write(subTitleList.ToString());
             sw.Close();
         }
@@ -157,6 +158,7 @@ namespace CarolsAutoSubTitleMaker
         {
             string[] s = (string[])e.Data.GetData(DataFormats.FileDrop, false);
             string filename = s[0];
+            filePath = filename;
             vfr.Open(filename);
             Console.WriteLine(vfr.FrameRate.ToDouble());
             Console.WriteLine(vfr.FrameCount);
