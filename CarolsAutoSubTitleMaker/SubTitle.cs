@@ -34,6 +34,7 @@ namespace CarolsAutoSubTitleMaker
         public int StartFrame { get; set; }
         public int EndFrame { get; set; }
         public string Text { get; set; }
+        public float FrameRate { get; set; }
 
         public SubTitle(int start,int end,string text)
         {
@@ -41,21 +42,23 @@ namespace CarolsAutoSubTitleMaker
             this.EndFrame = end;
             this.Text = text;
         }
-        public SubTitle()
+        public SubTitle(float frameRate)
         {
+            FrameRate = frameRate;
             StartFrame = -1;
             EndFrame = -1;
             Text = "";
         }
         public SubTitle(SubTitle title)
         {
+            FrameRate = title.FrameRate;
             StartFrame = title.StartFrame;
             EndFrame = title.EndFrame;
             Text = title.Text;
         }
         public override string ToString()
         {
-            float frameRate = 59.9400599400599f;
+            float frameRate = this.FrameRate;
 
             string startTime = frameToTime(frameRate, StartFrame);
             string endTime = frameToTime(frameRate, EndFrame);
