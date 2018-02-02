@@ -18,6 +18,16 @@ namespace CarolsAutoSubTitleMaker
         {
             list.Add(new SubTitle(sub));
         }
+        public string Preview()
+        {
+            string s = "";
+            foreach(var item in list)
+            {
+                s += item.ToString() + System.Environment.NewLine;
+            }
+
+            return s;
+        }
         public override string ToString()
         {
             string s = "";

@@ -29,6 +29,10 @@ namespace CarolsAutoSubTitleMaker
         int count = 0;
         float frameRate = 0;
         Boolean processing = false;
+
+        int debounceMaxCount = 5;
+        debounce<bool> debounceMSG = new debounce<bool>(10, false);
+        debounce<bool> debounceARROW = new debounce<bool>(10, false);
         public int Count
         {
             get
@@ -51,8 +55,9 @@ namespace CarolsAutoSubTitleMaker
             }
             set
             {
+                string[] parseText = { "", "等待字幕出现", "字幕出现中", "等待字幕消失" };
                 parse = value;
-                label2.Text = parse.ToString();
+                label2.Text = parseText[parse];
             }
         }
         SubTitleList subTitleList = new SubTitleList();
@@ -122,6 +127,9 @@ namespace CarolsAutoSubTitleMaker
 
             bool hasMSG = MSGresult < msgThreShold ? true : false;
             bool hasARROW = ARROWresult < arrowThreShold ? true : false;
+
+            debounceMSG.Value = hasMSG;
+            debounceARROW.Value = hasARROW;
             //Console.WriteLine("Frame = {0}  MsgResult = {1}  ArrowResult = {2}",count, MSGresult,ARROWresult);
 
             //MSGresult < 5 ==> 有MSG标志  || ArrowResult < 15 ==> 有 Arrow
@@ -134,6 +142,7 @@ namespace CarolsAutoSubTitleMaker
                 bm = DrawRectanglePicture(bm, new System.Drawing.Point(arrowObservedX, arrowObservedY), new System.Drawing.Point(arrowObservedX + arrowObservedWidth, arrowObservedY + arrowObservedHeight), Color.Red, 5, DashStyle.Solid);
             }
             if(checkBox1.Checked) pictureBox1.Image = bm;
+
             //Parse 1 ==> 等待字幕出现 （Arrow不存在）
             //Parse 2 ==> 字幕出现中   （MSG存在，Arrow不存在）
             //Parse 3 ==> 等待字幕消失 （Arrow存在）
@@ -141,23 +150,23 @@ namespace CarolsAutoSubTitleMaker
             switch (parse)
             {
                 case 1:
-                    if (hasMSG)
+                    if (debounceMSG.Value)
                     {
-                        nowSubTitle.StartFrame = count-1;
+                        nowSubTitle.StartFrame = count - 1 - 10;     //这里的5是debounce的maxCount
                         nowSubTitle.Text = "测试" + count.ToString();
                         Parse = 2;
                     }
                     break;
                 case 2:
-                    if (hasARROW)
+                    if (debounceARROW.Value)
                     {
                         Parse = 3;
                     }
                     break;
                 case 3:
-                    if (!hasARROW)
+                    if (!debounceARROW.Value)
                     {
-                        nowSubTitle.EndFrame = count;
+                        nowSubTitle.EndFrame = count - 10;       //同上
                         subTitleList.addSubTitle(nowSubTitle);
                         //Console.WriteLine("Stop on : " + count);
                         nowSubTitle = new SubTitle(frameRate);
@@ -171,6 +180,7 @@ namespace CarolsAutoSubTitleMaker
             arrowObserved.Dispose();
             graphic.Dispose();
 
+            richTextBox1.Text = subTitleList.Preview();
             GC.Collect();
             Application.DoEvents();
         }
